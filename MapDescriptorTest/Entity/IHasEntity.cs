@@ -16,5 +16,7 @@ namespace MapDescriptorTest.Entity
         /// </summary>
         /// <returns>EntityProperty</returns>
         EntityProperties GetEntityProperties();
+
+        void Update();
     }
 }

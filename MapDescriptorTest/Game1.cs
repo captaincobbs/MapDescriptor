@@ -11,11 +11,22 @@ namespace MapDescriptorTest
     /// </summary>
     public class Game1 : Game
     {
+        /// <summary>
+        /// Controls the position of the screen.
+        /// </summary>
+        public Matrix Camera { get; private set; }
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         TerrainGenerator terrainGenerator;
         EntityManager entityManager;
-        Player player1;
+        Player player;
+        int WindowWidth = 1280;
+        int WindowHeight = 720;
+        float CamZoom = 0.5f;
+        int camX = 0;
+        int camY = 0;
+        int camXDest = 0;
+        int camYDest = 0;
 
         public Game1()
         {
@@ -24,10 +35,12 @@ namespace MapDescriptorTest
             terrainGenerator = new TerrainGenerator();
             terrainGenerator.Generate();
             entityManager = new EntityManager();
-            player1 = new Player("Player");
+            player = new Player("Player");
+
             //graphics.IsFullScreen = true;
-            //graphics.PreferredBackBufferHeight
-            //graphics.ApplyChanges
+            graphics.PreferredBackBufferHeight = WindowHeight;
+            graphics.PreferredBackBufferWidth = WindowWidth;
+            graphics.ApplyChanges();
         }
 
         /// <summary>
@@ -55,7 +68,7 @@ namespace MapDescriptorTest
             // TODO: use this.Content to load your game content here
             Terrain.Terrain.LoadContent(Content);
             Player.LoadContent(Content);
-            entityManager.Entities.Add(player1);
+            entityManager.Entities.Add(player);
         }
 
         /// <summary>
@@ -74,11 +87,22 @@ namespace MapDescriptorTest
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
-
-            // TODO: Add your update logic here
-
+            GameOptions.FrameCounter++;
+            if (GameOptions.FrameCounter == GameOptions.InputDelay)
+            {
+                GameOptions.FrameCounter = 0;
+            }
+            InputManager.Update();
+            entityManager.Update();
+            camXDest = (int)(player.GetEntityProperties().Coordinate.X * GameOptions.TileSize);
+            camYDest = (int)(player.GetEntityProperties().Coordinate.Y * GameOptions.TileSize);
+            camX += (int)((camXDest - camX) * GameOptions.InertiaFactor);
+            camY += (int)((camYDest - camY) * GameOptions.InertiaFactor);
+            Camera =
+                Matrix.CreateTranslation(new Vector3(-camX, -camY, 0)) *
+                Matrix.CreateScale(new Vector3(CamZoom, CamZoom, 1)) *
+                Matrix.CreateTranslation(new Vector3(WindowWidth * 0.5f,
+                WindowHeight * 0.5f, 0));
             base.Update(gameTime);
         }
 
@@ -88,12 +112,18 @@ namespace MapDescriptorTest
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            spriteBatch.Begin();
+            spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, Camera);
             GraphicsDevice.Clear(Color.Black);
             terrainGenerator.Draw(spriteBatch);
             entityManager.Draw(spriteBatch);
             base.Draw(gameTime);
             spriteBatch.End();
+        }
+
+        public Vector2 GetCoordsMouse()
+        {
+            return Vector2.Transform(new Vector2(InputManager.MouseState.Position.X,
+                InputManager.MouseState.Position.Y), Matrix.Invert(Camera));
         }
     }
 }
