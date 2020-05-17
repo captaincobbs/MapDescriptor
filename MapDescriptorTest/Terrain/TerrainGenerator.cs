@@ -11,7 +11,6 @@ namespace MapDescriptorTest.Terrain
     {
         private static Random rng = new Random();
         private List<Terrain> map = new List<Terrain>();
-        private static int mapSize = 20;
 
         /// <summary>
         /// Gets the total amount of Terrain Types in the TerrainTypes enum
@@ -20,9 +19,9 @@ namespace MapDescriptorTest.Terrain
         public void Generate()
         {
             int terrainTypeLength = Enum.GetNames(typeof(TerrainType)).Length;
-            for (int y = 0; y < mapSize; y++)
+            for (int y = 0; y < GameOptions.MapSize; y++)
             {
-                for (int x = 0; x < mapSize; x++)
+                for (int x = 0; x < GameOptions.MapSize; x++)
                 {
                     map.Add(new Terrain(x,y,(TerrainType)rng.Next(0,terrainTypeLength)));
                 }
