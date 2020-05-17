@@ -20,5 +20,13 @@ namespace MapDescriptorTest.Entity
                 entityProperty.Draw(spriteBatch);
             }
         }
+
+        public void Update()
+        {
+            foreach (IHasEntity entity in Entities)
+            {
+                entity.Update();
+            }
+        }
     }
 }
