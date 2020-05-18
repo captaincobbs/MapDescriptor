@@ -1,13 +1,30 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 
 namespace MapDescriptorTest.Terrain
 {
+    /// <summary>
+    /// Class for each tile of terrain
+    /// </summary>
     public class Terrain
     {
+        /// <summary>
+        /// Count of possible types of terrain based off of the TerrainTypes enum
+        /// </summary>
+        public static int TerrainTypeLength { get; private set; } = Enum.GetNames(typeof(TerrainType)).Length;
+        /// <summary>
+        /// Image array to be used for representing tiles
+        /// </summary>
         public static Texture2D[] Image { get; set; } = new Texture2D[5];
+        /// <summary>
+        /// X,Y location of the tile on the world grid
+        /// </summary>
         public Vector2 Coordinate { get; set; }
+        /// <summary>
+        /// Type of terrain that the tile will get its properties from
+        /// </summary>
         public TerrainType TerrainType { get; set; }
 
         /// <summary>
