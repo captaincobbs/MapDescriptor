@@ -1,21 +1,39 @@
-﻿using Microsoft.Xna.Framework.Input;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 namespace MapDescriptorTest.Entity
 {
+    /// <summary>
+    /// Manager that controls and updates all user input
+    /// </summary>
     public static class InputManager
     {
+        /// <summary>
+        /// Current Keyboard State, updates each frame
+        /// </summary>
         public static KeyboardState KeyboardState { get; private set; }
+        /// <summary>
+        /// Current Mouse State, updates each frame
+        /// </summary>
         public static MouseState MouseState { get; private set; }
+        /// <summary>
+        /// Stores whether the window is active or not, updated each frame
+        /// </summary>
+        public static bool IsActive { get; private set; }
+        /// <summary>
+        /// Current coordinates of the mouse
+        /// </summary>
+        public static Vector2 MouseCoords { get; private set; }
 
-        public static void Update()
+        /// <summary>
+        /// Updates Mouse, Keyboard, and IsActive states each frame
+        /// </summary>
+        /// <param name="IsActive">IsActive state of the window</param>
+        public static void Update(bool IsActive, Matrix Camera)
         {
             KeyboardState = Keyboard.GetState();
             MouseState = Mouse.GetState();
+            InputManager.IsActive = IsActive;
+            MouseCoords = Vector2.Transform(new Vector2(InputManager.MouseState.Position.X,InputManager.MouseState.Position.Y), Matrix.Invert(Camera));
         }
     }
 }
