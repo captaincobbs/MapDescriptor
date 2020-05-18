@@ -20,7 +20,7 @@ namespace MapDescriptorTest
         /// <summary>
         /// Delay for accepting input from the keyboard for player keyboard input
         /// </summary>
-        public const int InputDelay = 6;
+        public static int InputDelay = 6;
         /// <summary>
         /// Frames counted since last reached InputDelay
         /// </summary>
@@ -28,7 +28,7 @@ namespace MapDescriptorTest
         /// <summary>
         /// Inertia speed of the camera
         /// </summary>
-        public const float InertiaFactor = 0.15f;
+        public static float InertiaFactor = 0.15f;
         /// <summary>
         /// Color of the window background
         /// </summary>
