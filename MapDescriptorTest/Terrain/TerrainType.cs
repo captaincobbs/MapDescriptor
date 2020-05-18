@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace MapDescriptorTest.Terrain
 {
+    /// <summary>
+    /// List of all types of terrain
+    /// </summary>
     public enum TerrainType{
         Desert,
         Forest,
