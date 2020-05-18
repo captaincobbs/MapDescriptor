@@ -2,34 +2,40 @@
 using MapDescriptorTest.Entity;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 
 namespace MapDescriptorTest
 {
     /// <summary>
     /// This is the main type for your game.
     /// </summary>
-    public class Game1 : Game
+    public class PrimaryLoop : Game
     {
         /// <summary>
         /// Controls the position of the screen.
         /// </summary>
         public Matrix Camera { get; private set; }
+        // Main variables
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         TerrainGenerator terrainGenerator;
         EntityManager entityManager;
         Player player;
+        // Window properties
         int WindowWidth = 1280;
         int WindowHeight = 720;
+        // Camera properties
         float CamZoom = 0.5f;
         int camX = 0;
         int camY = 0;
         int camXDest = 0;
         int camYDest = 0;
 
-        public Game1()
+        /// <summary>
+        /// Main Instance of the game that instantiates and creates all primary properties, generators, and managers.
+        /// </summary>
+        public PrimaryLoop()
         {
+            // Create main game variables
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             terrainGenerator = new TerrainGenerator();
@@ -37,7 +43,7 @@ namespace MapDescriptorTest
             entityManager = new EntityManager();
             player = new Player("Player");
 
-            //graphics.IsFullScreen = true;
+            // Set window dimensions
             graphics.PreferredBackBufferHeight = WindowHeight;
             graphics.PreferredBackBufferWidth = WindowWidth;
             graphics.ApplyChanges();
@@ -62,10 +68,9 @@ namespace MapDescriptorTest
         /// </summary>
         protected override void LoadContent()
         {
-            // Create a new SpriteBatch, which can be used to draw textures.
+            // Creates a new SpriteBatch, which is used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
-
-            // TODO: use this.Content to load your game content here
+   
             Terrain.Terrain.LoadContent(Content);
             Player.LoadContent(Content);
             entityManager.Entities.Add(player);
@@ -77,7 +82,7 @@ namespace MapDescriptorTest
         /// </summary>
         protected override void UnloadContent()
         {
-            // TODO: Unload any non ContentManager content here
+            // Unloads content
         }
 
         /// <summary>
@@ -87,22 +92,30 @@ namespace MapDescriptorTest
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+            // Limits movement based off of counted frame, frame it counts up to is in GameOptions
             GameOptions.FrameCounter++;
             if (GameOptions.FrameCounter == GameOptions.InputDelay)
             {
                 GameOptions.FrameCounter = 0;
             }
-            InputManager.Update();
-            entityManager.Update();
+
+            // Camera scrolling each frame
             camXDest = (int)(player.GetEntityProperties().Coordinate.X * GameOptions.TileSize);
             camYDest = (int)(player.GetEntityProperties().Coordinate.Y * GameOptions.TileSize);
             camX += (int)((camXDest - camX) * GameOptions.InertiaFactor);
             camY += (int)((camYDest - camY) * GameOptions.InertiaFactor);
+
+            // Change camera matrix properties with updated information
             Camera =
                 Matrix.CreateTranslation(new Vector3(-camX, -camY, 0)) *
                 Matrix.CreateScale(new Vector3(CamZoom, CamZoom, 1)) *
                 Matrix.CreateTranslation(new Vector3(WindowWidth * 0.5f,
                 WindowHeight * 0.5f, 0));
+
+            // Main updates
+            InputManager.Update(IsActive, Camera);
+            entityManager.Update();
+
             base.Update(gameTime);
         }
 
@@ -112,18 +125,13 @@ namespace MapDescriptorTest
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
+            // Render window
             spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, Camera);
-            GraphicsDevice.Clear(Color.Black);
+            GraphicsDevice.Clear(GameOptions.BackgroundColor);
             terrainGenerator.Draw(spriteBatch);
             entityManager.Draw(spriteBatch);
             base.Draw(gameTime);
             spriteBatch.End();
-        }
-
-        public Vector2 GetCoordsMouse()
-        {
-            return Vector2.Transform(new Vector2(InputManager.MouseState.Position.X,
-                InputManager.MouseState.Position.Y), Matrix.Invert(Camera));
         }
     }
 }
