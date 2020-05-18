@@ -8,7 +8,7 @@ namespace MapDescriptorTest
     /// <summary>
     /// This is the main type for your game.
     /// </summary>
-    public class PrimaryLoop : Game
+    public class Game1 : Game
     {
         /// <summary>
         /// Controls the position of the screen.
@@ -33,7 +33,7 @@ namespace MapDescriptorTest
         /// <summary>
         /// Main Instance of the game that instantiates and creates all primary properties, generators, and managers.
         /// </summary>
-        public PrimaryLoop()
+        public Game1()
         {
             // Create main game variables
             graphics = new GraphicsDeviceManager(this);
@@ -113,7 +113,7 @@ namespace MapDescriptorTest
                 WindowHeight * 0.5f, 0));
 
             // Main updates
-            InputManager.Update(IsActive, Camera);
+            InputManager.Update(IsActive);
             entityManager.Update();
 
             base.Update(gameTime);
@@ -132,6 +132,12 @@ namespace MapDescriptorTest
             entityManager.Draw(spriteBatch);
             base.Draw(gameTime);
             spriteBatch.End();
+        }
+
+        public Vector2 GetCoordsMouse()
+        {
+            return Vector2.Transform(new Vector2(InputManager.MouseState.Position.X,
+                InputManager.MouseState.Position.Y), Matrix.Invert(Camera));
         }
     }
 }

@@ -19,21 +19,16 @@ namespace MapDescriptorTest.Entity
         /// Stores whether the window is active or not, updated each frame
         /// </summary>
         public static bool IsActive { get; private set; }
-        /// <summary>
-        /// Current coordinates of the mouse
-        /// </summary>
-        public static Vector2 MouseCoords { get; private set; }
 
         /// <summary>
         /// Updates Mouse, Keyboard, and IsActive states each frame
         /// </summary>
         /// <param name="IsActive">IsActive state of the window</param>
-        public static void Update(bool IsActive, Matrix Camera)
+        public static void Update(bool IsActive)
         {
             KeyboardState = Keyboard.GetState();
             MouseState = Mouse.GetState();
             InputManager.IsActive = IsActive;
-            MouseCoords = Vector2.Transform(new Vector2(InputManager.MouseState.Position.X,InputManager.MouseState.Position.Y), Matrix.Invert(Camera));
         }
     }
 }
