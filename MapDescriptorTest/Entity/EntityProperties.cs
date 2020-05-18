@@ -1,24 +1,41 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MapDescriptorTest.Entity
 {
+    /// <summary>
+    /// Class used to manage entities and make them update themselves as needed
+    /// </summary>
     public class EntityProperties
     {
+        /// <summary>
+        /// Image drawn to represent the entity on the world grid
+        /// </summary>
         public Texture2D Image { get; set; }
+        /// <summary>
+        /// X,Y Position on the world grid of the Entity
+        /// </summary>
         public Vector2 Coordinate { get; set; }
+        /// <summary>
+        /// Z-Index of an entity
+        /// </summary>
         public float Depth { get; set; }
+        /// <summary>
+        /// Direction an entity is facing in radians
+        /// </summary>
         public float Rotation { get; set; }
 
-        public EntityProperties(Texture2D image, Vector2 position, float depth, float rotation)
+        /// <summary>
+        /// Stores and manages the properties of an entity
+        /// </summary>
+        /// <param name="image">Image drawn on the world grid to represent the entity</param>
+        /// <param name="coordinate">Position of the entity on the world grid</param>
+        /// <param name="depth">Z-Index of an entity</param>
+        /// <param name="rotation">Direction a entity shall be facing in radians</param>
+        public EntityProperties(Texture2D image, Vector2 coordinate, float depth, float rotation)
         {
             Image = image;
-            Coordinate = position;
+            Coordinate = coordinate;
             Depth = depth;
             Rotation = rotation;
         }
