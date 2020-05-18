@@ -3,20 +3,35 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MapDescriptorTest.Entity
 {
+    /// <summary>
+    /// Class of the controllable player, moves around the map from user input
+    /// </summary>
     public class Player : IHasEntity
     {
+        /// <summary>
+        /// Name of the player
+        /// </summary>
         public string Name { get; set; } = "Player";
+        /// <summary>
+        /// Entity properties of the Player entity
+        /// </summary>
         public EntityProperties Properties { get; set; }
+        /// <summary>
+        /// Image used to represent the player
+        /// </summary>
         public static Texture2D Image { get; set; }
+        /// <summary>
+        /// Starting coordinate of the player
+        /// </summary>
         public Vector2 Coordinate { get; set; }
 
+        /// <summary>
+        /// Constructor for a player instance
+        /// </summary>
+        /// <param name="Name">The players chosen name</param>
         public Player(string Name)
         {
             Coordinate = new Vector2(GameOptions.MapSize / 2, GameOptions.MapSize / 2);
@@ -33,12 +48,19 @@ namespace MapDescriptorTest.Entity
             Image = contentManager.Load<Texture2D>("Player");
         }
 
+        /// <summary>
+        /// Method to update player actions
+        /// </summary>
         public void Update()
         {
-            MovePlayer();
+            if (InputManager.IsActive)
+            {
+                HandleMovement();
+            }
+            
         }
 
-        private void MovePlayer()
+        private void HandleMovement()
         {
             if (GameOptions.FrameCounter == 0)
             {
@@ -64,6 +86,10 @@ namespace MapDescriptorTest.Entity
             }
         }
 
+        /// <summary>
+        /// Gets the properties of the player 
+        /// </summary>
+        /// <returns>Player properties</returns>
         public EntityProperties GetEntityProperties()
         {
             Properties.Image = Image;

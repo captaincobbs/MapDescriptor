@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MapDescriptorTest.Entity
+﻿namespace MapDescriptorTest.Entity
 {
     /// <summary>
     /// A class that uses this interface will have an entity
