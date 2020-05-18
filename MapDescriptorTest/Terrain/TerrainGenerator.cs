@@ -1,12 +1,12 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MapDescriptorTest.Terrain
 {
+    /// <summary>
+    /// Generates the terrain
+    /// </summary>
     public class TerrainGenerator
     {
         private static Random rng = new Random();
@@ -18,12 +18,12 @@ namespace MapDescriptorTest.Terrain
         /// </summary>
         public void Generate()
         {
-            int terrainTypeLength = Enum.GetNames(typeof(TerrainType)).Length;
+            // Map Generation
             for (int y = 0; y < GameOptions.MapSize; y++)
             {
                 for (int x = 0; x < GameOptions.MapSize; x++)
                 {
-                    map.Add(new Terrain(x,y,(TerrainType)rng.Next(0,terrainTypeLength)));
+                    map.Add(new Terrain(x,y,(TerrainType)rng.Next(0,Terrain.TerrainTypeLength)));
                 }
             }
         }
