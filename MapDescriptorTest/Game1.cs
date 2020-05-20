@@ -2,6 +2,7 @@
 using MapDescriptorTest.Entity;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 
 namespace MapDescriptorTest
 {
@@ -14,6 +15,14 @@ namespace MapDescriptorTest
         /// Controls the position of the screen.
         /// </summary>
         public Matrix Camera { get; private set; }
+        /// <summary>
+        /// Change in scroll wheel since last update
+        /// </summary>
+        public static int CurrentScrollWheelValue { get; private set; }
+        /// <summary>
+        /// Last recorded scroll wheel update
+        /// </summary>
+        public static int DeltaScrollWheelValue { get; private set; }
         // Main variables
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
@@ -21,10 +30,12 @@ namespace MapDescriptorTest
         EntityManager entityManager;
         Player player;
         // Window properties
-        int WindowWidth = 1280;
-        int WindowHeight = 720;
+        int windowWidth = 1280;
+        int windowHeight = 720;
         // Camera properties
-        float CamZoom = 0.5f;
+        float camZoom = 0.5f;
+        float maxCamZoom = 4f;
+        float minCamZoom = 0.1f;
         int camX = 0;
         int camY = 0;
         int camXDest = 0;
@@ -44,8 +55,8 @@ namespace MapDescriptorTest
             player = new Player("Player");
 
             // Set window dimensions
-            graphics.PreferredBackBufferHeight = WindowHeight;
-            graphics.PreferredBackBufferWidth = WindowWidth;
+            graphics.PreferredBackBufferHeight = windowHeight;
+            graphics.PreferredBackBufferWidth = windowWidth;
             graphics.ApplyChanges();
         }
 
@@ -99,18 +110,35 @@ namespace MapDescriptorTest
                 GameOptions.FrameCounter = 0;
             }
 
-            // Camera scrolling each frame
-            camXDest = (int)(player.GetEntityProperties().Coordinate.X * GameOptions.TileSize);
-            camYDest = (int)(player.GetEntityProperties().Coordinate.Y * GameOptions.TileSize);
+            // Camera scrolling each frame - subtracting (GameOptions.TileSize/2) centers the screen
+            camXDest = (int)((player.GetEntityProperties().Coordinate.X * GameOptions.TileSize) - (GameOptions.TileSize/2));
+            camYDest = (int)((player.GetEntityProperties().Coordinate.Y * GameOptions.TileSize) - (GameOptions.TileSize/2));
             camX += (int)((camXDest - camX) * GameOptions.InertiaFactor);
             camY += (int)((camYDest - camY) * GameOptions.InertiaFactor);
+
+            // Scrolling
+            DeltaScrollWheelValue = InputManager.MouseState.ScrollWheelValue - CurrentScrollWheelValue;
+            CurrentScrollWheelValue += DeltaScrollWheelValue;
+            if (DeltaScrollWheelValue != CurrentScrollWheelValue)
+            {
+                camZoom += DeltaScrollWheelValue * (GameOptions.ScrollSensitivity / 1000f);
+            }
+
+            // Reset camera zoom
+            if (InputManager.MouseState.MiddleButton == ButtonState.Pressed)
+            {
+                camZoom = 0.5f;
+            }
+
+            // Keep camera zoom within a specific range
+            camZoom = Common.ContainInRange(camZoom, minCamZoom, maxCamZoom);
 
             // Change camera matrix properties with updated information
             Camera =
                 Matrix.CreateTranslation(new Vector3(-camX, -camY, 0)) *
-                Matrix.CreateScale(new Vector3(CamZoom, CamZoom, 1)) *
-                Matrix.CreateTranslation(new Vector3(WindowWidth * 0.5f,
-                WindowHeight * 0.5f, 0));
+                Matrix.CreateScale(new Vector3(camZoom, camZoom, 1)) *
+                Matrix.CreateTranslation(new Vector3(windowWidth * 0.5f,
+                windowHeight * 0.5f, 0));
 
             // Main updates
             InputManager.Update(IsActive);
@@ -126,7 +154,7 @@ namespace MapDescriptorTest
         protected override void Draw(GameTime gameTime)
         {
             // Render window
-            spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, Camera);
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.PointClamp, null, null, null, Camera);
             GraphicsDevice.Clear(GameOptions.BackgroundColor);
             terrainGenerator.Draw(spriteBatch);
             entityManager.Draw(spriteBatch);
