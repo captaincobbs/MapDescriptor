@@ -33,5 +33,9 @@ namespace MapDescriptorTest
         /// Color of the window background
         /// </summary>
         public static Color BackgroundColor = Color.Black;
+		/// <summary>
+		/// Scrolls required to do scroll actions
+		/// </summary>
+		public static float ScrollSensitivity = 1f;
     }
 }
