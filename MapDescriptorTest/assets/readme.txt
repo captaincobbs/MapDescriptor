@@ -1,0 +1,1 @@
+﻿Unused in game, only used by the spritesheet tool to combine all the sprites
