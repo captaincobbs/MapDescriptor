@@ -3,6 +3,7 @@ using MapDescriptorTest.Entity;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using MapDescriptorTest.Sprite;
 
 namespace MapDescriptorTest
 {
@@ -34,11 +35,12 @@ namespace MapDescriptorTest
         int windowHeight = 720;
         // Camera properties
         float camZoom = 0.5f;
+        float camZoomDest = 0.5f;
         float maxCamZoom = 4f;
-        float minCamZoom = 0.1f;
+        float minCamZoom = 0.2f;
         int camX = 0;
-        int camY = 0;
         int camXDest = 0;
+        int camY = 0;
         int camYDest = 0;
 
         /// <summary>
@@ -81,9 +83,7 @@ namespace MapDescriptorTest
         {
             // Creates a new SpriteBatch, which is used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
-   
-            Terrain.Terrain.LoadContent(Content);
-            Player.LoadContent(Content);
+            TextureIndex.LoadContent(Content);
             entityManager.Entities.Add(player);
         }
 
@@ -103,13 +103,6 @@ namespace MapDescriptorTest
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            // Limits movement based off of counted frame, frame it counts up to is in GameOptions
-            GameOptions.FrameCounter++;
-            if (GameOptions.FrameCounter == GameOptions.InputDelay)
-            {
-                GameOptions.FrameCounter = 0;
-            }
-
             // Camera scrolling each frame - subtracting (GameOptions.TileSize/2) centers the screen
             camXDest = (int)((player.GetEntityProperties().Coordinate.X * GameOptions.TileSize) - (GameOptions.TileSize/2));
             camYDest = (int)((player.GetEntityProperties().Coordinate.Y * GameOptions.TileSize) - (GameOptions.TileSize/2));
@@ -117,17 +110,18 @@ namespace MapDescriptorTest
             camY += (int)((camYDest - camY) * GameOptions.InertiaFactor);
 
             // Scrolling
+            camZoom += ((camZoomDest - camZoom) * GameOptions.InertiaFactor);
             DeltaScrollWheelValue = InputManager.MouseState.ScrollWheelValue - CurrentScrollWheelValue;
             CurrentScrollWheelValue += DeltaScrollWheelValue;
             if (DeltaScrollWheelValue != CurrentScrollWheelValue)
             {
-                camZoom += DeltaScrollWheelValue * (GameOptions.ScrollSensitivity / 1000f);
+                camZoomDest += DeltaScrollWheelValue * (GameOptions.ScrollSensitivity / 1000f);
             }
 
             // Reset camera zoom
             if (InputManager.MouseState.MiddleButton == ButtonState.Pressed)
             {
-                camZoom = 0.5f;
+                camZoomDest = 0.5f;
             }
 
             // Keep camera zoom within a specific range
