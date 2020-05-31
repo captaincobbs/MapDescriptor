@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using MapDescriptorTest.Sprite;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System;
@@ -17,7 +18,7 @@ namespace MapDescriptorTest.Terrain
         /// <summary>
         /// Image array to be used for representing tiles
         /// </summary>
-        public static Texture2D[] Image { get; set; } = new Texture2D[5];
+        public static Rectangle[] Image { get; set; } = new Rectangle[5];
         /// <summary>
         /// X,Y location of the tile on the world grid
         /// </summary>
@@ -37,19 +38,11 @@ namespace MapDescriptorTest.Terrain
         {
             Coordinate = new Vector2(x * GameOptions.TileSize, y * GameOptions.TileSize);
             this.TerrainType = terrainType;
-        }
-
-        /// <summary>
-        /// Loads all the map tile images into the Terrain Image array
-        /// </summary>
-        /// <param name="contentManager">ContentManager passed into the Terrain class to allow it to load textures</param>
-        public static void LoadContent(ContentManager contentManager)
-        {
-            Image[0] = contentManager.Load<Texture2D>("Desert");
-            Image[1] = contentManager.Load<Texture2D>("Forest");
-            Image[2] = contentManager.Load<Texture2D>("Grasslands");
-            Image[3] = contentManager.Load<Texture2D>("Mountain");
-            Image[4] = contentManager.Load<Texture2D>("Ocean");
+            Image[0] = SpriteAtlas.Desert;
+            Image[1] = SpriteAtlas.Forest;
+            Image[2] = SpriteAtlas.Grasslands;
+            Image[3] = SpriteAtlas.Mountain;
+            Image[4] = SpriteAtlas.Ocean;
         }
 
         /// <summary>
@@ -59,7 +52,7 @@ namespace MapDescriptorTest.Terrain
         public void Draw(SpriteBatch spriteBatch)
         {
             Rectangle destRect = new Rectangle((int)Coordinate.X, (int)Coordinate.Y, GameOptions.TileSize, GameOptions.TileSize);
-            spriteBatch.Draw(Image[(int)TerrainType], destRect, null, Color.White, 0f, Vector2.Zero, SpriteEffects.None, 0.5f);
+            spriteBatch.Draw(TextureIndex.SpriteAtlas, destRect, Image[(int)TerrainType], Color.White, 0f, Vector2.Zero, SpriteEffects.None, 0.5f);
         }
     }
 }
