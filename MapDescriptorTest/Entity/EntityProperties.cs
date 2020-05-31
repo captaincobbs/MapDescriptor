@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using MapDescriptorTest.Sprite;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace MapDescriptorTest.Entity
@@ -11,7 +12,7 @@ namespace MapDescriptorTest.Entity
         /// <summary>
         /// Image drawn to represent the entity on the world grid
         /// </summary>
-        public Texture2D Image { get; set; }
+        public Rectangle Image { get; set; }
         /// <summary>
         /// X,Y Position on the world grid of the Entity
         /// </summary>
@@ -32,7 +33,7 @@ namespace MapDescriptorTest.Entity
         /// <param name="coordinate">Position of the entity on the world grid</param>
         /// <param name="depth">Z-Index of an entity</param>
         /// <param name="rotation">Direction a entity shall be facing in radians</param>
-        public EntityProperties(Texture2D image, Vector2 coordinate, float depth, float rotation)
+        public EntityProperties(Rectangle image, Vector2 coordinate, float depth, float rotation)
         {
             Image = image;
             Coordinate = coordinate;
@@ -52,7 +53,7 @@ namespace MapDescriptorTest.Entity
                GameOptions.TileSize,
                GameOptions.TileSize);
 
-            spriteBatch.Draw(Image, destRect, null, Color.White, Rotation, new Vector2(GameOptions.TileSize / 2, GameOptions.TileSize / 2), SpriteEffects.None, Depth);
+            spriteBatch.Draw(TextureIndex.SpriteAtlas, destRect, Image, Color.White, Rotation, new Vector2(GameOptions.TileSize / 2, GameOptions.TileSize / 2), SpriteEffects.None, Depth);
         }
     }
 }
