@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using MapDescriptorTest.Sprite;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -22,11 +23,36 @@ namespace MapDescriptorTest.Entity
         /// <summary>
         /// Image used to represent the player
         /// </summary>
-        public static Texture2D Image { get; set; }
+        public static Rectangle Image { get; set; }
+        public static Rectangle DiagonalImage { get; set; }
+        public static Rectangle PerpendicularImage { get; set; }
         /// <summary>
-        /// Starting coordinate of the player
+        /// Coordinate of the player, update to move the player
         /// </summary>
-        public Vector2 Coordinate { get; set; }
+        ///
+        public Vector2 DestCoordinate { get; set; }
+        private Vector2 AnimCoordinate { get; set; }
+        public float Direction { get; set; }
+        private int frameCounter = 0;
+        private int frameLimit = 8;
+
+        // Player Direction
+        /// <summary>
+        /// Vertical movement states for the player
+        /// </summary>
+        public enum VerticalPlayerDirection { None, Up, Down }
+        /// <summary>
+        /// Horizontal movement states for the player
+        /// </summary>
+        public enum HorizontalPlayerDirection { None, Right, Left }
+        /// <summary>
+        /// Vertical movement state the player is planning on moving to
+        /// </summary>
+        public static VerticalPlayerDirection VerticalIndicatedDirection = VerticalPlayerDirection.None;
+        /// <summary>
+        /// Horizontal movement state the player is planning on moving to
+        /// </summary>
+        public static HorizontalPlayerDirection HorizontalIndicatedDirection = HorizontalPlayerDirection.None;
 
         /// <summary>
         /// Constructor for a player instance
@@ -34,18 +60,13 @@ namespace MapDescriptorTest.Entity
         /// <param name="Name">The players chosen name</param>
         public Player(string Name)
         {
-            Coordinate = new Vector2(GameOptions.MapSize / 2, GameOptions.MapSize / 2);
+            AnimCoordinate = new Vector2(GameOptions.MapSize / 2, GameOptions.MapSize / 2);
+            DestCoordinate = AnimCoordinate;
             this.Name = Name;
-            Properties = new EntityProperties(Image, Coordinate, 1, 0f);
-        }
-
-        /// <summary>
-        /// Loads all the map tile images into the Terrain Image array
-        /// </summary>
-        /// <param name="contentManager">ContentManager passed into the Terrain class to allow it to load textures</param>
-        public static void LoadContent(ContentManager contentManager)
-        {
-            Image = contentManager.Load<Texture2D>("Player");
+            Properties = new EntityProperties(PerpendicularImage, DestCoordinate, 1, Direction);
+            PerpendicularImage = SpriteAtlas.Player;
+            DiagonalImage = SpriteAtlas.PlayerDiagonal;
+            Image = PerpendicularImage;
         }
 
         /// <summary>
@@ -53,37 +74,142 @@ namespace MapDescriptorTest.Entity
         /// </summary>
         public void Update()
         {
+            // Movement
             if (InputManager.IsActive)
             {
                 HandleMovement();
             }
-            
+
+            // Update the animation coordinate to make character slide
+            AnimCoordinate = new Vector2(
+            (DestCoordinate.X - AnimCoordinate.X) * GameOptions.MovementInertiaFactor + AnimCoordinate.X,
+            (DestCoordinate.Y - AnimCoordinate.Y) * GameOptions.MovementInertiaFactor + AnimCoordinate.Y
+            );
+            Properties = new EntityProperties(Properties.Image, new Vector2(AnimCoordinate.X, AnimCoordinate.Y), Properties.Depth, Direction);
+
+            // Frame Counting
+            if (frameCounter == frameLimit)
+            {
+                frameCounter = 0;
+            }
+            else
+            {
+                frameCounter++;
+            }
         }
 
         private void HandleMovement()
         {
-            if (GameOptions.FrameCounter == 0)
+            // Keyboard input
+            if (InputManager.KeyboardState.IsKeyDown(Keys.Right) && !InputManager.KeyboardState.IsKeyDown(Keys.Left))
             {
-                if (InputManager.KeyboardState.IsKeyDown(Keys.Right))
+                if (InputManager.LastKeyboardState.IsKeyUp(Keys.Right))
                 {
-                    Properties = new EntityProperties(Properties.Image, new Vector2(Properties.Coordinate.X + 1, Properties.Coordinate.Y), Properties.Depth, 0f);
+                    Move();
+                    frameCounter = 0;
                 }
 
-                if (InputManager.KeyboardState.IsKeyDown(Keys.Left))
-                {
-                    Properties = new EntityProperties(Properties.Image, new Vector2(Properties.Coordinate.X - 1, Properties.Coordinate.Y), Properties.Depth, -(float)Math.PI);
-                }
-
-                if (InputManager.KeyboardState.IsKeyDown(Keys.Up))
-                {
-                    Properties = new EntityProperties(Properties.Image, new Vector2(Properties.Coordinate.X, Properties.Coordinate.Y - 1), Properties.Depth, -(float)Math.PI / 2);
-                }
-
-                if (InputManager.KeyboardState.IsKeyDown(Keys.Down))
-                {
-                    Properties = new EntityProperties(Properties.Image, new Vector2(Properties.Coordinate.X, Properties.Coordinate.Y + 1), Properties.Depth, (float)Math.PI / 2);
-                }
+                HorizontalIndicatedDirection = HorizontalPlayerDirection.Right;
             }
+
+            if (InputManager.KeyboardState.IsKeyDown(Keys.Left) && !InputManager.KeyboardState.IsKeyDown(Keys.Right))
+            {
+                if (InputManager.LastKeyboardState.IsKeyUp(Keys.Left))
+                {
+                    Move();
+                    frameCounter = 0;
+                }
+
+                HorizontalIndicatedDirection = HorizontalPlayerDirection.Left;
+            }
+
+            if (InputManager.KeyboardState.IsKeyDown(Keys.Up) && !InputManager.KeyboardState.IsKeyDown(Keys.Down))
+            {
+                if (InputManager.LastKeyboardState.IsKeyUp(Keys.Up))
+                {
+                    Move();
+                    frameCounter = 0;
+                }
+
+                VerticalIndicatedDirection = VerticalPlayerDirection.Up;
+            }
+
+            if (InputManager.KeyboardState.IsKeyDown(Keys.Down) && !InputManager.KeyboardState.IsKeyDown(Keys.Up))
+            {
+                if (InputManager.LastKeyboardState.IsKeyUp(Keys.Down))
+                {
+                    Move();
+                    frameCounter = 0;
+                }
+
+                VerticalIndicatedDirection = VerticalPlayerDirection.Down;
+            }
+
+            if (frameCounter == frameLimit)
+            {
+                Move();
+            }
+        }
+
+        private void Move()
+        {
+            // Convert indicated direction state to movement
+            int xMove = HorizontalIndicatedDirection == HorizontalPlayerDirection.Left
+                ? -1 : HorizontalIndicatedDirection == HorizontalPlayerDirection.Right
+                ? 1 : 0;
+
+            int yMove = VerticalIndicatedDirection == VerticalPlayerDirection.Down
+                ? 1 : VerticalIndicatedDirection == VerticalPlayerDirection.Up
+                ? -1 : 0;
+
+            // Rotate player based off of movement
+            if (xMove == 1 && yMove == 0)
+            {
+                Image = PerpendicularImage;
+                Direction = 0f;
+            }
+            else if (xMove == 1 && yMove == 1)
+            {
+                Image = DiagonalImage;
+                Direction = (float)Math.PI / 2;
+            }
+            else if (xMove == 0 && yMove == 1)
+            {
+                Image = PerpendicularImage;
+                Direction = (float)Math.PI / 2;
+            }
+            if (xMove == -1 && yMove == 1)
+            {
+                Image = DiagonalImage;
+                Direction = -(float)Math.PI;
+            }
+            else if (xMove == -1 && yMove == 0)
+            {
+                Image = PerpendicularImage;
+                Direction = -(float)Math.PI;
+            }
+            else if (xMove == -1 && yMove == -1)
+            {
+                Image = DiagonalImage;
+                Direction = -(float)Math.PI / 2;
+            }
+            else if (xMove == 0 && yMove == -1)
+            {
+                Image = PerpendicularImage;
+                Direction = -(float)Math.PI / 2;
+            }
+            else if (xMove == 1 && yMove == -1)
+            {
+                Image = DiagonalImage;
+                Direction = 0f;
+            }
+
+            // Player Sliding
+            DestCoordinate = new Vector2(DestCoordinate.X + xMove, DestCoordinate.Y + yMove);
+
+            // Reset movement direction
+            VerticalIndicatedDirection = VerticalPlayerDirection.None;
+            HorizontalIndicatedDirection = HorizontalPlayerDirection.None;
         }
 
         /// <summary>
