@@ -18,17 +18,13 @@ namespace MapDescriptorTest
         /// </summary>
         public const int MapSize = 20;
         /// <summary>
-        /// Delay for accepting input from the keyboard for player keyboard input
-        /// </summary>
-        public static int InputDelay = 6;
-        /// <summary>
-        /// Frames counted since last reached InputDelay
-        /// </summary>
-        public static int FrameCounter = 0;
-        /// <summary>
         /// Inertia speed of the camera
         /// </summary>
         public static float InertiaFactor = 0.15f;
+        /// <summary>
+        /// Inertia speed of the player
+        /// </summary>
+        public static float MovementInertiaFactor = 0.12f;
         /// <summary>
         /// Color of the window background
         /// </summary>
