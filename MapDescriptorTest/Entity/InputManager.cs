@@ -1,5 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
+﻿using Microsoft.Xna.Framework.Input;
 namespace MapDescriptorTest.Entity
 {
     /// <summary>
@@ -19,6 +18,10 @@ namespace MapDescriptorTest.Entity
         /// Stores whether the window is active or not, updated each frame
         /// </summary>
         public static bool IsActive { get; private set; }
+        /// <summary>
+        /// Last key pressed on keyboard
+        /// </summary>
+        public static KeyboardState LastKeyboardState { get; private set; }
 
         /// <summary>
         /// Updates Mouse, Keyboard, and IsActive states each frame
@@ -26,6 +29,7 @@ namespace MapDescriptorTest.Entity
         /// <param name="IsActive">IsActive state of the window</param>
         public static void Update(bool IsActive)
         {
+            LastKeyboardState = KeyboardState;
             KeyboardState = Keyboard.GetState();
             MouseState = Mouse.GetState();
             InputManager.IsActive = IsActive;
