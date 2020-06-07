@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace MapDescriptorTest.Terrain
+namespace MapDescriptorTest.Statics
 {
     /// <summary>
     /// Generates the terrain

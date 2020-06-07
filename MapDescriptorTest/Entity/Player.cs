@@ -1,8 +1,10 @@
 ﻿using MapDescriptorTest.Sprite;
+using MapDescriptorTest.World;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Newtonsoft.Json;
 using System;
 
 namespace MapDescriptorTest.Entity
@@ -10,29 +12,36 @@ namespace MapDescriptorTest.Entity
     /// <summary>
     /// Class of the controllable player, moves around the map from user input
     /// </summary>
-    public class Player : IHasEntity
+    public class Player : IHasEntity, ITileObject
     {
         /// <summary>
         /// Name of the player
         /// </summary>
+        [JsonProperty("name")]
         public string Name { get; set; } = "Player";
-        /// <summary>
-        /// Entity properties of the Player entity
-        /// </summary>
-        public EntityProperties Properties { get; set; }
+
         /// <summary>
         /// Image used to represent the player
         /// </summary>
-        public static Rectangle Image { get; set; }
+        public Rectangle Image { get; set; }
         public static Rectangle DiagonalImage { get; set; }
         public static Rectangle PerpendicularImage { get; set; }
+
+        [JsonProperty("depth")]
+        public float Depth { get; set; }
+
         /// <summary>
         /// Coordinate of the player, update to move the player
         /// </summary>
         ///
-        public Vector2 DestCoordinate { get; set; }
+        [JsonProperty("coordinate")]
+        public Vector2 Coordinate { get; set; }
+
+        public TileObjectType TileType { get; } = TileObjectType.Player;
         private Vector2 AnimCoordinate { get; set; }
-        public float Direction { get; set; }
+
+        [JsonProperty("direction")]
+        public float Rotation { get; set; }
         private int frameCounter = 0;
         private int frameLimit = 8;
 
@@ -61,12 +70,12 @@ namespace MapDescriptorTest.Entity
         public Player(string Name)
         {
             AnimCoordinate = new Vector2(GameOptions.MapSize / 2, GameOptions.MapSize / 2);
-            DestCoordinate = AnimCoordinate;
+            Coordinate = AnimCoordinate;
             this.Name = Name;
-            Properties = new EntityProperties(PerpendicularImage, DestCoordinate, 1, Direction);
             PerpendicularImage = SpriteAtlas.Player;
             DiagonalImage = SpriteAtlas.PlayerDiagonal;
             Image = PerpendicularImage;
+            Depth = 1f;
         }
 
         /// <summary>
@@ -82,10 +91,9 @@ namespace MapDescriptorTest.Entity
 
             // Update the animation coordinate to make character slide
             AnimCoordinate = new Vector2(
-            (DestCoordinate.X - AnimCoordinate.X) * GameOptions.MovementInertiaFactor + AnimCoordinate.X,
-            (DestCoordinate.Y - AnimCoordinate.Y) * GameOptions.MovementInertiaFactor + AnimCoordinate.Y
+            (Coordinate.X - AnimCoordinate.X) * GameOptions.MovementInertiaFactor + AnimCoordinate.X,
+            (Coordinate.Y - AnimCoordinate.Y) * GameOptions.MovementInertiaFactor + AnimCoordinate.Y
             );
-            Properties = new EntityProperties(Properties.Image, new Vector2(AnimCoordinate.X, AnimCoordinate.Y), Properties.Depth, Direction);
 
             // Frame Counting
             if (frameCounter == frameLimit)
@@ -166,60 +174,61 @@ namespace MapDescriptorTest.Entity
             if (xMove == 1 && yMove == 0)
             {
                 Image = PerpendicularImage;
-                Direction = 0f;
+                Rotation = 0f;
             }
             else if (xMove == 1 && yMove == 1)
             {
                 Image = DiagonalImage;
-                Direction = (float)Math.PI / 2;
+                Rotation = (float)Math.PI / 2;
             }
             else if (xMove == 0 && yMove == 1)
             {
                 Image = PerpendicularImage;
-                Direction = (float)Math.PI / 2;
+                Rotation = (float)Math.PI / 2;
             }
             if (xMove == -1 && yMove == 1)
             {
                 Image = DiagonalImage;
-                Direction = -(float)Math.PI;
+                Rotation = -(float)Math.PI;
             }
             else if (xMove == -1 && yMove == 0)
             {
                 Image = PerpendicularImage;
-                Direction = -(float)Math.PI;
+                Rotation = -(float)Math.PI;
             }
             else if (xMove == -1 && yMove == -1)
             {
                 Image = DiagonalImage;
-                Direction = -(float)Math.PI / 2;
+                Rotation = -(float)Math.PI / 2;
             }
             else if (xMove == 0 && yMove == -1)
             {
                 Image = PerpendicularImage;
-                Direction = -(float)Math.PI / 2;
+                Rotation = -(float)Math.PI / 2;
             }
             else if (xMove == 1 && yMove == -1)
             {
                 Image = DiagonalImage;
-                Direction = 0f;
+                Rotation = 0f;
             }
 
             // Player Sliding
-            DestCoordinate = new Vector2(DestCoordinate.X + xMove, DestCoordinate.Y + yMove);
+            Coordinate = new Vector2(Coordinate.X + xMove, Coordinate.Y + yMove);
 
             // Reset movement direction
             VerticalIndicatedDirection = VerticalPlayerDirection.None;
             HorizontalIndicatedDirection = HorizontalPlayerDirection.None;
         }
 
-        /// <summary>
-        /// Gets the properties of the player 
-        /// </summary>
-        /// <returns>Player properties</returns>
-        public EntityProperties GetEntityProperties()
+        public void Draw(SpriteBatch spriteBatch)
         {
-            Properties.Image = Image;
-            return Properties;
+            Rectangle destRect = new Rectangle(
+               (int)(AnimCoordinate.X * GameOptions.TileSize) - (GameOptions.TileSize / 2),
+               (int)(AnimCoordinate.Y * GameOptions.TileSize) - (GameOptions.TileSize / 2),
+               GameOptions.TileSize,
+               GameOptions.TileSize);
+
+            spriteBatch.Draw(TextureIndex.SpriteAtlas, destRect, Image, Color.White, Rotation, new Vector2(GameOptions.TileSize / 2, GameOptions.TileSize / 2), SpriteEffects.None, Depth);
         }
     }
 }

@@ -21,8 +21,7 @@ namespace MapDescriptorTest.Entity
         {
             foreach (IHasEntity entity in Entities)
             {
-                EntityProperties entityProperty = entity.GetEntityProperties();
-                entityProperty.Draw(spriteBatch);
+                entity.Draw(spriteBatch);
             }
         }
 

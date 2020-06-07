@@ -42,10 +42,14 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Common.cs" />
-    <Compile Include="Entity\EntityProperties.cs" />
+    <Compile Include="Entity\Hostile.cs" />
+    <Compile Include="Entity\Entity.cs" />
     <Compile Include="Entity\EntityManager.cs" />
     <Compile Include="Entity\IHasEntity.cs" />
     <Compile Include="Entity\InputManager.cs" />
+    <Compile Include="Statics\Feature.cs" />
+    <Compile Include="Statics\Structure.cs" />
+    <Compile Include="World\ITileObject.cs" />
     <Compile Include="Entity\Player.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="GameOptions.cs" />
@@ -60,31 +64,39 @@
     <Compile Include="Sprite\Texture2DManager.cs" />
     <Compile Include="Sprite\TextureIndex.cs" />
     <Compile Include="Sprite\Textures.cs" />
-    <Compile Include="Terrain\Terrain.cs" />
-    <Compile Include="Terrain\TerrainGenerator.cs" />
-    <Compile Include="Terrain\TerrainType.cs" />
+    <Compile Include="Statics\Terrain.cs" />
+    <Compile Include="Statics\TerrainGenerator.cs" />
+    <Compile Include="Statics\TerrainType.cs" />
+    <Compile Include="World\Tile.cs" />
+    <Compile Include="World\Chunk.cs" />
+    <Compile Include="World\TileObjectType.cs" />
+    <Compile Include="World\World.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="MonoGame.Framework">
       <HintPath>$(MonoGameInstallDirectory)\MonoGame\v3.0\Assemblies\Windows\MonoGame.Framework.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="assets\Desert.png" />
-    <Content Include="assets\Forest.png" />
-    <Content Include="assets\Grasslands.png" />
-    <Content Include="assets\Mountain.png" />
-    <Content Include="assets\Ocean.png" />
-    <Content Include="assets\Player.png" />
-    <Content Include="assets\PlayerDiagonal.png" />
-    <Content Include="assets\readme.txt" />
+    <Content Include="Assets\Desert.png" />
+    <Content Include="Assets\Forest.png" />
+    <Content Include="Assets\Grasslands.png" />
+    <Content Include="Assets\Mountain.png" />
+    <Content Include="Assets\Ocean.png" />
+    <Content Include="Assets\Player.png" />
+    <Content Include="Assets\PlayerDiagonal.png" />
+    <Content Include="Assets\readme.txt" />
     <Content Include="Icon.ico" />
   </ItemGroup>
   <ItemGroup>
     <MonoGameContentReference Include="Content\Content.mgcb" />
     <None Include="app.manifest" />
+    <None Include="packages.config" />
     <None Include="Scripts\BuildTextures.ps1" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

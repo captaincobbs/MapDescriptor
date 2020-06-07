@@ -1,15 +1,17 @@
 ﻿using MapDescriptorTest.Sprite;
+using MapDescriptorTest.World;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Newtonsoft.Json;
 using System;
 
-namespace MapDescriptorTest.Terrain
+namespace MapDescriptorTest.Statics
 {
     /// <summary>
     /// Class for each tile of terrain
     /// </summary>
-    public class Terrain
+    public class Terrain : ITileObject
     {
         /// <summary>
         /// Count of possible types of terrain based off of the TerrainTypes enum
@@ -19,14 +21,21 @@ namespace MapDescriptorTest.Terrain
         /// Image array to be used for representing tiles
         /// </summary>
         public static Rectangle[] Image { get; set; } = new Rectangle[5];
+
         /// <summary>
         /// X,Y location of the tile on the world grid
         /// </summary>
+        [JsonProperty("coordinate")]
         public Vector2 Coordinate { get; set; }
+
         /// <summary>
         /// Type of terrain that the tile will get its properties from
         /// </summary>
+        [JsonProperty("terraintype")]
         public TerrainType TerrainType { get; set; }
+
+        [JsonProperty("tiletype")]
+        public TileObjectType TileType { get; } = TileObjectType.Terrain;
 
         /// <summary>
         /// Sets passed in variables to the stored properties within the individual terrain

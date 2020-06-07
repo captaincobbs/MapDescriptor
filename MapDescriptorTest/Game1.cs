@@ -1,4 +1,4 @@
-﻿using MapDescriptorTest.Terrain;
+﻿using MapDescriptorTest.Statics;
 using MapDescriptorTest.Entity;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -104,8 +104,8 @@ namespace MapDescriptorTest
         protected override void Update(GameTime gameTime)
         {
             // Camera scrolling each frame - subtracting (GameOptions.TileSize/2) centers the screen
-            camXDest = (int)((player.GetEntityProperties().Coordinate.X * GameOptions.TileSize) - (GameOptions.TileSize/2));
-            camYDest = (int)((player.GetEntityProperties().Coordinate.Y * GameOptions.TileSize) - (GameOptions.TileSize/2));
+            camXDest = (int)((player.Coordinate.X * GameOptions.TileSize) - (GameOptions.TileSize/2));
+            camYDest = (int)((player.Coordinate.Y * GameOptions.TileSize) - (GameOptions.TileSize/2));
             camX += (int)((camXDest - camX) * GameOptions.InertiaFactor);
             camY += (int)((camYDest - camY) * GameOptions.InertiaFactor);
 

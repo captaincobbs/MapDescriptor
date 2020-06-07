@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MapDescriptorTest.Terrain
+namespace MapDescriptorTest.Statics
 {
     /// <summary>
     /// List of all types of terrain
