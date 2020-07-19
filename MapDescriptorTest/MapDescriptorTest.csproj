@@ -47,6 +47,8 @@
     <Compile Include="Entity\EntityManager.cs" />
     <Compile Include="Entity\IHasEntity.cs" />
     <Compile Include="Entity\InputManager.cs" />
+    <Compile Include="FileUtilities.cs" />
+    <Compile Include="LogUtilities.cs" />
     <Compile Include="Statics\Feature.cs" />
     <Compile Include="Statics\Structure.cs" />
     <Compile Include="World\ITileObject.cs" />
@@ -71,6 +73,7 @@
     <Compile Include="World\Chunk.cs" />
     <Compile Include="World\TileObjectType.cs" />
     <Compile Include="World\World.cs" />
+    <Compile Include="World\WorldViewer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="MonoGame.Framework">
@@ -80,6 +83,7 @@
       <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
