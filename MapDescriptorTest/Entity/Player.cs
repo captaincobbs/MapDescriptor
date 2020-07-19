@@ -33,9 +33,8 @@ namespace MapDescriptorTest.Entity
         /// <summary>
         /// Coordinate of the player, update to move the player
         /// </summary>
-        ///
-        [JsonProperty("coordinate")]
-        public Vector2 Coordinate { get; set; }
+        [JsonIgnore]
+        public Tile ContainingTile { get; set; }
 
         public TileObjectType TileType { get; } = TileObjectType.Player;
         private Vector2 AnimCoordinate { get; set; }
@@ -67,10 +66,10 @@ namespace MapDescriptorTest.Entity
         /// Constructor for a player instance
         /// </summary>
         /// <param name="Name">The players chosen name</param>
-        public Player(string Name)
+        public Player(string Name, Tile containingTile)
         {
+            ContainingTile = containingTile;
             AnimCoordinate = new Vector2(GameOptions.MapSize / 2, GameOptions.MapSize / 2);
-            Coordinate = AnimCoordinate;
             this.Name = Name;
             PerpendicularImage = SpriteAtlas.Player;
             DiagonalImage = SpriteAtlas.PlayerDiagonal;
@@ -81,7 +80,7 @@ namespace MapDescriptorTest.Entity
         /// <summary>
         /// Method to update player actions
         /// </summary>
-        public void Update()
+        public void Update(World.World world)
         {
             // Movement
             if (InputManager.IsActive)
@@ -91,8 +90,8 @@ namespace MapDescriptorTest.Entity
 
             // Update the animation coordinate to make character slide
             AnimCoordinate = new Vector2(
-            (Coordinate.X - AnimCoordinate.X) * GameOptions.MovementInertiaFactor + AnimCoordinate.X,
-            (Coordinate.Y - AnimCoordinate.Y) * GameOptions.MovementInertiaFactor + AnimCoordinate.Y
+            (ContainingTile.XPosition - AnimCoordinate.X) * GameOptions.MovementInertiaFactor + AnimCoordinate.X,
+            (ContainingTile.YPosition - AnimCoordinate.Y) * GameOptions.MovementInertiaFactor + AnimCoordinate.Y
             );
 
             // Frame Counting
