@@ -23,7 +23,7 @@ namespace MapDescriptorTest.Statics
             {
                 for (int x = 0; x < GameOptions.MapSize; x++)
                 {
-                    map.Add(new Terrain(x,y,(TerrainType)rng.Next(0,Terrain.TerrainTypeLength)));
+                    map.Add(new Terrain((TerrainType)rng.Next(0,Terrain.TerrainTypeLength)));
                 }
             }
         }

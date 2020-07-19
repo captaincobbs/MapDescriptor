@@ -23,12 +23,6 @@ namespace MapDescriptorTest.Statics
         public static Rectangle[] Image { get; set; } = new Rectangle[5];
 
         /// <summary>
-        /// X,Y location of the tile on the world grid
-        /// </summary>
-        [JsonProperty("coordinate")]
-        public Vector2 Coordinate { get; set; }
-
-        /// <summary>
         /// Type of terrain that the tile will get its properties from
         /// </summary>
         [JsonProperty("terraintype")]
@@ -43,9 +37,8 @@ namespace MapDescriptorTest.Statics
         /// <param name="x">X-Coordinate of the Terrain Tile</param>
         /// <param name="y">Y-Coordinate of the Terrain Tile</param>
         /// <param name="terrainType">Terrain type of the Terrain Tile</param>
-        public Terrain(float x, float y, TerrainType terrainType)
+        public Terrain(TerrainType terrainType)
         {
-            Coordinate = new Vector2(x * GameOptions.TileSize, y * GameOptions.TileSize);
             this.TerrainType = terrainType;
             Image[0] = SpriteAtlas.Desert;
             Image[1] = SpriteAtlas.Forest;
@@ -58,9 +51,9 @@ namespace MapDescriptorTest.Statics
         /// Makes the terrain draw itself when needed
         /// </summary>
         /// <param name="spriteBatch">Sprite Batched used to allow the Terrain to draw itself</param>
-        public void Draw(SpriteBatch spriteBatch)
+        public void Draw(SpriteBatch spriteBatch, Tile tile)
         {
-            Rectangle destRect = new Rectangle((int)Coordinate.X, (int)Coordinate.Y, GameOptions.TileSize, GameOptions.TileSize);
+            Rectangle destRect = new Rectangle(tile.XPosition, tile.YPosition, GameOptions.TileSize, GameOptions.TileSize);
             spriteBatch.Draw(TextureIndex.SpriteAtlas, destRect, Image[(int)TerrainType], Color.White, 0f, Vector2.Zero, SpriteEffects.None, 0.5f);
         }
     }
