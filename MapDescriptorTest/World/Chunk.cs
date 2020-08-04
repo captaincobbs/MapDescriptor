@@ -1,4 +1,6 @@
-﻿using Microsoft.Xna.Framework;
+﻿using MapDescriptorTest.Entity;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using System;
 using System.IO;
@@ -10,6 +12,11 @@ namespace MapDescriptorTest.World
     /// </summary>
     public class Chunk
     {
+        /// <summary>
+        /// Directory where the Chunks are saved and loaded to/from
+        /// </summary>
+        private static string ChunkDirectory { get; set; }
+
         [JsonProperty("tiles")]
         public Tile[,] Tiles;
 
@@ -19,29 +26,55 @@ namespace MapDescriptorTest.World
         public static readonly int TILES_PER_DIMENSION = 20;
 
         [JsonIgnore]
-        private bool isDirty;
+        public bool IsDirty { get; set; }
 
+        /// <summary>
+        /// Status on if the chunk and all its contents are currently active
+        /// </summary>
         [JsonIgnore]
         public bool IsLoaded { get; set; }
 
+        /// <summary>
+        /// Chunk's X Position on the Map
+        /// </summary>
         [JsonIgnore]
         private int xPosition;
 
+        /// <summary>
+        /// Chunk's Y Position on the Map
+        /// </summary>
         [JsonIgnore]
         private int yPosition;
 
-        public Chunk(int xPos, int yPos)
+        [JsonIgnore]
+        private World world;
+
+        static Chunk()
         {
-            isDirty = false;
+            ChunkDirectory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "MapDescriptor\\";
+        }
+
+        /// <summary>
+        /// A chunk contains a 20x20 array of tiles and manages their status, a chunk saves with all of its child tiles and entities
+        /// </summary>
+        /// <param name="xPos">X-Position of the Chunk in the World Chunk Array</param>
+        /// <param name="yPos">Y-Position of the Chunk in the World Chunk Array</param>
+        public Chunk(int xPos, int yPos, World world)
+        {
+            IsDirty = false;
             IsLoaded = false;
             Tiles = null;
             xPosition = xPos;
             yPosition = yPos;
+            this.world = world;
         }
 
+        /// <summary>
+        /// Recreates all tiles in the chunk from scratch
+        /// </summary>
         private void CreateTiles()
         {
-            isDirty = true;
+            IsDirty = true;
             IsLoaded = true;
 
             for (int y = 0; y < TILES_PER_DIMENSION; y++)
@@ -54,13 +87,23 @@ namespace MapDescriptorTest.World
         }
 
         /// <summary>
+        /// Returns the directory to get/save chunks of the given world
+        /// </summary>
+        /// <param name="world">World in which chunks are going to be loaded and saved from</param>
+        /// <returns>The file path where chunks are going to be loaded/saved from</returns>
+        public static string GetChunkDirectory(World world)
+        {
+            return ChunkDirectory + world.WorldName + "\\";
+        }
+
+        /// <summary>
         /// Returns a string in the correct format to save a chunk name.
         /// </summary>
         /// <param name="chunkX">The x-coordinate of the chunk.</param>
         /// <param name="chunkY">The y-coordinate of the chunk.</param>
         public static string GetChunkPath(int chunkX, int chunkY, string baseDirectory)
         {
-            return System.IO.Path.Combine(baseDirectory, $"chunk{chunkX},{chunkY}.json");
+            return Path.Combine(baseDirectory, $"chunk{chunkX},{chunkY}.json");
         }
 
         /// <summary>
@@ -75,19 +118,38 @@ namespace MapDescriptorTest.World
             return Tuple.Create(one, two);
         }
 
-        public static Chunk LoadChunk(string filePath)
+        /// <summary>
+        /// Loads a chunk from JSON as needed
+        /// </summary>
+        /// <param name="filePath">Path where chunk information will be saved</param>
+        public static Chunk LoadChunk(string filePath, World world)
         {
             try
             {
                 Chunk chunk = FileUtilities.LoadJson<Chunk>(filePath, true);
                 chunk.IsLoaded = true;
+                chunk.world = world;
+
+                Tuple<int, int> tuple = GetCoordinatesFromPath(filePath);
+                chunk.xPosition = tuple.Item1;
+                chunk.yPosition = tuple.Item2;
+
+                for (int x = 0; x < TILES_PER_DIMENSION; x++)
+                {
+                    for (int y = 0; y < TILES_PER_DIMENSION; y++)
+                    {
+                        chunk.Tiles[x, y].XPosition = x;
+                        chunk.Tiles[x, y].YPosition = y;
+                    }
+                }
+
                 return chunk;
             }
             catch (FileNotFoundException)
             {
                 Tuple<int,int> tuple = GetCoordinatesFromPath(filePath);
 
-                Chunk chunk = new Chunk(tuple.Item1, tuple.Item2);
+                Chunk chunk = new Chunk(tuple.Item1, tuple.Item2, world);
                 chunk.CreateTiles();
 
                 return chunk;
@@ -104,25 +166,79 @@ namespace MapDescriptorTest.World
             return null;
         }
 
+        /// <summary>
+        /// Saves dirty chunks in JSON to the save directory of the passed through world
+        /// </summary>
+        /// <param name="world">Uses the save directory of passed through world</param>
         public void SaveChunk(World world)
         {
             // Chunks must be loaded and marked dirty to save.
-            if (!isDirty || Tiles == null)
+            if (!IsDirty || Tiles == null)
             {
                 return;
             }
 
-            string path = GetChunkPath(xPosition, yPosition, world.SaveDirectory);
+            string path = GetChunkPath(xPosition, yPosition, GetChunkDirectory(world));
 
             try
             {
                 FileUtilities.SaveFileJson(this, path, true);
-                isDirty = false;
+                IsDirty = false;
             }
             catch (Exception ex)
             {
                 string failure = $"The chunk at \"{path}\" failed to save.";
                 LogUtilities.Log(ex, failure);
+            }
+        }
+
+        /// <summary>
+        /// Draws the chunk at the specified position. If the cached texture for the chunk isn't
+        /// invalid, draws using that texture. Otherwise, draws each block in the chunk separately.
+        /// </summary>
+        /// <param name="spriteBatch">The spriteBatch to use.</param>
+        public void Draw(SpriteBatch spriteBatch)
+        {
+            if (Tiles == null)
+            {
+                return;
+            }
+
+            for (int y = 0; y < Chunk.TILES_PER_DIMENSION; y++)
+            {
+                for (int x = 0; x < Chunk.TILES_PER_DIMENSION; x++)
+                {
+                    foreach (ITileObject tileObject in Tiles[x, y].tileObjects)
+                    {
+                        tileObject.Draw(spriteBatch, Tiles[x, y]);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void Update()
+        {
+            if (Tiles == null)
+            {
+                return; 
+            }
+
+            for (int y = 0; y < Chunk.TILES_PER_DIMENSION; y++)
+            {
+                for (int x = 0; x < Chunk.TILES_PER_DIMENSION; x++)
+                {
+                    foreach (ITileObject tileObject in Tiles[x, y].tileObjects)
+                    {
+                        if (tileObject.IsEntity)
+                        {
+                            ((IHasEntity)tileObject).Update(world);
+                        }
+                        
+                    }
+                }
             }
         }
     }

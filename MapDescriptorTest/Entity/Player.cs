@@ -15,7 +15,7 @@ namespace MapDescriptorTest.Entity
     public class Player : IHasEntity, ITileObject
     {
         /// <summary>
-        /// Name of the player
+        /// Name of the player, inputted by user
         /// </summary>
         [JsonProperty("name")]
         public string Name { get; set; } = "Player";
@@ -24,8 +24,11 @@ namespace MapDescriptorTest.Entity
         /// Image used to represent the player
         /// </summary>
         public Rectangle Image { get; set; }
+
+        /// <summary>
+        /// Images used by the player, arranged in a 3x3 array. 1, 1 is the center, so X + 1 would be the right-facing sprite, and Y + 1 would be the up-facing sprite
+        /// </summary>
         public static Rectangle DiagonalImage { get; set; }
-        public static Rectangle PerpendicularImage { get; set; }
 
         [JsonProperty("depth")]
         public float Depth { get; set; }
@@ -37,6 +40,7 @@ namespace MapDescriptorTest.Entity
         public Tile ContainingTile { get; set; }
 
         public TileObjectType TileType { get; } = TileObjectType.Player;
+
         private Vector2 AnimCoordinate { get; set; }
 
         [JsonProperty("direction")]
@@ -62,18 +66,17 @@ namespace MapDescriptorTest.Entity
         /// </summary>
         public static HorizontalPlayerDirection HorizontalIndicatedDirection = HorizontalPlayerDirection.None;
 
+        /// <inheritdoc/>
+        public bool IsEntity { get; } = true;
+
         /// <summary>
         /// Constructor for a player instance
         /// </summary>
         /// <param name="Name">The players chosen name</param>
-        public Player(string Name, Tile containingTile)
+        public Player(string Name)
         {
-            ContainingTile = containingTile;
             AnimCoordinate = new Vector2(GameOptions.MapSize / 2, GameOptions.MapSize / 2);
             this.Name = Name;
-            PerpendicularImage = SpriteAtlas.Player;
-            DiagonalImage = SpriteAtlas.PlayerDiagonal;
-            Image = PerpendicularImage;
             Depth = 1f;
         }
 
@@ -85,7 +88,7 @@ namespace MapDescriptorTest.Entity
             // Movement
             if (InputManager.IsActive)
             {
-                HandleMovement();
+                HandleMovement(world);
             }
 
             // Update the animation coordinate to make character slide
@@ -105,14 +108,14 @@ namespace MapDescriptorTest.Entity
             }
         }
 
-        private void HandleMovement()
+        private void HandleMovement(World.World world)
         {
             // Keyboard input
             if (InputManager.KeyboardState.IsKeyDown(Keys.Right) && !InputManager.KeyboardState.IsKeyDown(Keys.Left))
             {
                 if (InputManager.LastKeyboardState.IsKeyUp(Keys.Right))
                 {
-                    Move();
+                    Move(world);
                     frameCounter = 0;
                 }
 
@@ -123,7 +126,7 @@ namespace MapDescriptorTest.Entity
             {
                 if (InputManager.LastKeyboardState.IsKeyUp(Keys.Left))
                 {
-                    Move();
+                    Move(world);
                     frameCounter = 0;
                 }
 
@@ -134,7 +137,7 @@ namespace MapDescriptorTest.Entity
             {
                 if (InputManager.LastKeyboardState.IsKeyUp(Keys.Up))
                 {
-                    Move();
+                    Move(world);
                     frameCounter = 0;
                 }
 
@@ -145,7 +148,7 @@ namespace MapDescriptorTest.Entity
             {
                 if (InputManager.LastKeyboardState.IsKeyUp(Keys.Down))
                 {
-                    Move();
+                    Move(world);
                     frameCounter = 0;
                 }
 
@@ -154,13 +157,13 @@ namespace MapDescriptorTest.Entity
 
             if (frameCounter == frameLimit)
             {
-                Move();
+                Move(world);
             }
         }
 
-        private void Move()
+        private void Move(World.World world)
         {
-            // Convert indicated direction state to movement
+            // Convert indicated direction state to movement, Right = Positive X, Down = Positive Y
             int xMove = HorizontalIndicatedDirection == HorizontalPlayerDirection.Left
                 ? -1 : HorizontalIndicatedDirection == HorizontalPlayerDirection.Right
                 ? 1 : 0;
@@ -169,57 +172,67 @@ namespace MapDescriptorTest.Entity
                 ? 1 : VerticalIndicatedDirection == VerticalPlayerDirection.Up
                 ? -1 : 0;
 
-            // Rotate player based off of movement
+            // Change rotational sprite based off of player movement
+            // Right
             if (xMove == 1 && yMove == 0)
             {
-                Image = PerpendicularImage;
-                Rotation = 0f;
+                Image = SpriteAtlas.PlayerRight;
             }
+            // Down Right
             else if (xMove == 1 && yMove == 1)
             {
-                Image = DiagonalImage;
-                Rotation = (float)Math.PI / 2;
+                Image = SpriteAtlas.PlayerBottomRight;
             }
+            // Down
             else if (xMove == 0 && yMove == 1)
             {
-                Image = PerpendicularImage;
-                Rotation = (float)Math.PI / 2;
+                Image = SpriteAtlas.PlayerDown;
             }
+            // Down Left
             if (xMove == -1 && yMove == 1)
             {
-                Image = DiagonalImage;
-                Rotation = -(float)Math.PI;
+                Image = SpriteAtlas.PlayerBottomLeft;
             }
+            // Left
             else if (xMove == -1 && yMove == 0)
             {
-                Image = PerpendicularImage;
-                Rotation = -(float)Math.PI;
+                Image = SpriteAtlas.PlayerLeft;
             }
+            // Up Left
             else if (xMove == -1 && yMove == -1)
             {
-                Image = DiagonalImage;
-                Rotation = -(float)Math.PI / 2;
+                Image = SpriteAtlas.PlayerTopLeft;
             }
+            // Up
             else if (xMove == 0 && yMove == -1)
             {
-                Image = PerpendicularImage;
-                Rotation = -(float)Math.PI / 2;
+                Image = SpriteAtlas.PlayerUp;
             }
+            // Up Right
             else if (xMove == 1 && yMove == -1)
             {
-                Image = DiagonalImage;
-                Rotation = 0f;
+                Image = SpriteAtlas.PlayerTopRight;
             }
 
             // Player Sliding
-            Coordinate = new Vector2(Coordinate.X + xMove, Coordinate.Y + yMove);
+            Tile newTile = world.GetTile(ContainingTile.XPosition + xMove, ContainingTile.YPosition + yMove, false);
+            if (newTile != null)
+            {
+                world.GetChunk(newTile.XPosition, newTile.YPosition).IsDirty = true;
+                world.GetChunk(ContainingTile.XPosition, ContainingTile.YPosition).IsDirty = true;
+
+                newTile.tileObjects.Add(this);
+                ContainingTile.tileObjects.Remove(this);
+
+                ContainingTile = newTile;
+            }
 
             // Reset movement direction
             VerticalIndicatedDirection = VerticalPlayerDirection.None;
             HorizontalIndicatedDirection = HorizontalPlayerDirection.None;
         }
 
-        public void Draw(SpriteBatch spriteBatch)
+        public void Draw(SpriteBatch spriteBatch, Tile tile)
         {
             Rectangle destRect = new Rectangle(
                (int)(AnimCoordinate.X * GameOptions.TileSize) - (GameOptions.TileSize / 2),
@@ -229,5 +242,6 @@ namespace MapDescriptorTest.Entity
 
             spriteBatch.Draw(TextureIndex.SpriteAtlas, destRect, Image, Color.White, Rotation, new Vector2(GameOptions.TileSize / 2, GameOptions.TileSize / 2), SpriteEffects.None, Depth);
         }
+
     }
 }

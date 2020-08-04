@@ -24,6 +24,7 @@
     <DefineConstants>DEBUG;TRACE;WINDOWS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>7.1</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -33,6 +34,7 @@
     <DefineConstants>TRACE;WINDOWS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>7.1</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
@@ -41,10 +43,8 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Common.cs" />
-    <Compile Include="Entity\Hostile.cs" />
+    <Compile Include="MathUtilities.cs" />
     <Compile Include="Entity\Entity.cs" />
-    <Compile Include="Entity\EntityManager.cs" />
     <Compile Include="Entity\IHasEntity.cs" />
     <Compile Include="Entity\InputManager.cs" />
     <Compile Include="FileUtilities.cs" />
@@ -67,7 +67,7 @@
     <Compile Include="Sprite\TextureIndex.cs" />
     <Compile Include="Sprite\Textures.cs" />
     <Compile Include="Statics\Terrain.cs" />
-    <Compile Include="Statics\TerrainGenerator.cs" />
+    <Compile Include="Statics\WorldGenerator.cs" />
     <Compile Include="Statics\TerrainType.cs" />
     <Compile Include="World\Tile.cs" />
     <Compile Include="World\Chunk.cs" />

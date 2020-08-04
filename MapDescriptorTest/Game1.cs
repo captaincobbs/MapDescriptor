@@ -4,6 +4,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MapDescriptorTest.Sprite;
+using MapDescriptorTest.World;
+using System;
 
 namespace MapDescriptorTest
 {
@@ -16,20 +18,22 @@ namespace MapDescriptorTest
         /// Controls the position of the screen.
         /// </summary>
         public Matrix Camera { get; private set; }
+        
         /// <summary>
         /// Change in scroll wheel since last update
         /// </summary>
         public static int CurrentScrollWheelValue { get; private set; }
+       
         /// <summary>
         /// Last recorded scroll wheel update
         /// </summary>
         public static int DeltaScrollWheelValue { get; private set; }
+        
         // Main variables
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
-        TerrainGenerator terrainGenerator;
-        EntityManager entityManager;
-        Player player;
+        WorldViewer worldViewer;
+        readonly Player player;
         // Window properties
         int windowWidth = 1280;
         int windowHeight = 720;
@@ -51,10 +55,9 @@ namespace MapDescriptorTest
             // Create main game variables
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
-            terrainGenerator = new TerrainGenerator();
-            terrainGenerator.Generate();
-            entityManager = new EntityManager();
             player = new Player("Player");
+            World.World world = WorldGenerator.Generate("world", player);
+            worldViewer = new WorldViewer(world);
 
             // Set window dimensions
             graphics.PreferredBackBufferHeight = windowHeight;
@@ -70,8 +73,6 @@ namespace MapDescriptorTest
         /// </summary>
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
-
             base.Initialize();
         }
 
@@ -84,7 +85,6 @@ namespace MapDescriptorTest
             // Creates a new SpriteBatch, which is used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
             TextureIndex.LoadContent(Content);
-            entityManager.Entities.Add(player);
         }
 
         /// <summary>
@@ -104,8 +104,8 @@ namespace MapDescriptorTest
         protected override void Update(GameTime gameTime)
         {
             // Camera scrolling each frame - subtracting (GameOptions.TileSize/2) centers the screen
-            camXDest = (int)((player.Coordinate.X * GameOptions.TileSize) - (GameOptions.TileSize/2));
-            camYDest = (int)((player.Coordinate.Y * GameOptions.TileSize) - (GameOptions.TileSize/2));
+            camXDest = (int)((player.ContainingTile.XPosition * GameOptions.TileSize) - (GameOptions.TileSize/2));
+            camYDest = (int)((player.ContainingTile.YPosition * GameOptions.TileSize) - (GameOptions.TileSize/2));
             camX += (int)((camXDest - camX) * GameOptions.InertiaFactor);
             camY += (int)((camYDest - camY) * GameOptions.InertiaFactor);
 
@@ -125,7 +125,7 @@ namespace MapDescriptorTest
             }
 
             // Keep camera zoom within a specific range
-            camZoom = Common.ContainInRange(camZoom, minCamZoom, maxCamZoom);
+            camZoom = MathUtilities.ContainInRange(camZoom, minCamZoom, maxCamZoom);
 
             // Change camera matrix properties with updated information
             Camera =
@@ -136,7 +136,7 @@ namespace MapDescriptorTest
 
             // Main updates
             InputManager.Update(IsActive);
-            entityManager.Update();
+            worldViewer.UpdateChunkRange(player.ContainingTile.XPosition - 100, player.ContainingTile.YPosition - 100, player.ContainingTile.XPosition + 100, player.ContainingTile.YPosition + 100);
 
             base.Update(gameTime);
         }
@@ -150,16 +150,9 @@ namespace MapDescriptorTest
             // Render window
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.PointClamp, null, null, null, Camera);
             GraphicsDevice.Clear(GameOptions.BackgroundColor);
-            terrainGenerator.Draw(spriteBatch);
-            entityManager.Draw(spriteBatch);
+            worldViewer.DrawChunkRange(spriteBatch, player.ContainingTile.XPosition - 100, player.ContainingTile.YPosition - 100, player.ContainingTile.XPosition + 100, player.ContainingTile.YPosition + 100);
             base.Draw(gameTime);
             spriteBatch.End();
-        }
-
-        public Vector2 GetCoordsMouse()
-        {
-            return Vector2.Transform(new Vector2(InputManager.MouseState.Position.X,
-                InputManager.MouseState.Position.Y), Matrix.Invert(Camera));
         }
     }
 }

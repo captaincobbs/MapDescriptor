@@ -109,24 +109,16 @@ namespace MapDescriptorTest
             string directory = Path.GetDirectoryName(path);
             string fileName = Path.GetFileName(path);
 
-            if (!System.IO.Directory.Exists(directory))
-            {
-                string exception = $"The file \"{fileName}\" could not be saved" +
-                    $"since \"{directory}\" is not a valid directory.";
-
-                if (throwErrors)
-                {
-                    throw new FileNotFoundException(exception);
-                }
-
-                LogUtilities.Log(exception);
-                return null;
-            }
-
             try
             {
+                if (!Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
                 string text = JsonConvert.SerializeObject(obj);
-                System.IO.File.WriteAllText(path, text);
+                File.WriteAllText(path, text);
+
                 return path;
             }
             catch (Exception ex)
@@ -246,4 +238,5 @@ namespace MapDescriptorTest
         }
 
     }
+
 }

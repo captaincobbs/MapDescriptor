@@ -17,23 +17,28 @@ namespace MapDescriptorTest.Entity
 
         public Rectangle Image { get; set; }
 
+        public bool IsHostile { get; set; }
+
         public Vector2 Coordinate { get; set; }
 
         public float Depth { get; set; }
 
         public float Rotation { get; set; }
 
+        /// <inheritdoc/>
+        public bool IsEntity { get; } = true;
+
         public Entity()
         {
 
         }
 
-        public void Update()
+        public void Update(World.World world)
         {
 
         }
 
-        public void Draw(SpriteBatch spriteBatch)
+        public void Draw(SpriteBatch spriteBatch, Tile tile)
         {
 
         }

@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 namespace MapDescriptorTest
 {
     /// <summary>
-    /// Class of common functions I don't like doing
+    /// Class of common math functions I don't like doing
     /// </summary>
-    public static class Common
+    public static class MathUtilities
     {
         /// <summary>
         /// Forces a float to stay within the range specified.

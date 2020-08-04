@@ -9,14 +9,23 @@ namespace MapDescriptorTest.World
     /// </summary>
     public class World
     {
+        /// <summary>
+        /// Array of all chunks in the world.
+        /// </summary>
         [JsonIgnore]
         public Chunk[,] Chunks;
 
-        [JsonIgnore]
-        public string SaveDirectory { get; private set; } = null;
-
+        /// <summary>
+        /// The size of one dimension of the world in chunks. Assumes the world is square.
+        /// </summary>
         [JsonProperty("mapsize")]
         public int MapSize { get; private set; }
+
+        /// <summary>
+        /// User defined name of the world
+        /// </summary>
+        [JsonProperty("worldname")]
+        public string WorldName { get; set; }
 
         /// <summary>
         /// Constructor
@@ -32,11 +41,12 @@ namespace MapDescriptorTest.World
                 for (int x = 0; x < mapSize; x++)
                 {
                     // All the chunks are initialized as empty to avoid lag
-                    Chunks[x, y] = new Chunk(x, y);
+                    Chunks[x, y] = new Chunk(x, y, this);
                 }
             }
         }
 
+        ///
         [JsonConstructor]
         private World()
         {
@@ -53,23 +63,51 @@ namespace MapDescriptorTest.World
         /// <param name="forceLoadChunk">Loads the chunk if not available synchronously</param>
         public Tile GetTile(int xPos, int yPos, bool forceLoadChunk)
         {
-            int chunkX = (int)Math.Ceiling((double)xPos / Chunk.TILES_PER_DIMENSION);
-            int chunkY = (int)Math.Ceiling((double)yPos / Chunk.TILES_PER_DIMENSION);
-            Chunk chunk = Chunks[chunkX, chunkY];
+            int worldSizeInTiles = this.MapSize * Chunk.TILES_PER_DIMENSION;
 
-            if (!chunk.IsLoaded)
+            if (xPos < worldSizeInTiles && xPos > 0 && yPos < worldSizeInTiles && yPos > 0)
             {
-                if(forceLoadChunk)
+                int chunkX = (int)Math.Ceiling((double)xPos / Chunk.TILES_PER_DIMENSION);
+                int chunkY = (int)Math.Ceiling((double)yPos / Chunk.TILES_PER_DIMENSION);
+                Chunk chunk = Chunks[chunkX, chunkY];
+
+                if (!chunk.IsLoaded)
                 {
-                    Chunks[chunkX, chunkY] = Chunk.LoadChunk(Chunk.GetChunkPath(xPos, yPos, SaveDirectory));
+                    if (forceLoadChunk)
+                    {
+                        Chunks[chunkX, chunkY] = Chunk.LoadChunk(Chunk.GetChunkPath(xPos, yPos, Chunk.GetChunkDirectory(this)), this);
+                    }
+                    else
+                    {
+                        return null;
+                    }
                 }
-                else
-                {
-                    return null;
-                }
+
+                return Chunks[chunkX, chunkY].Tiles[xPos % chunkX, yPos % chunkY];
             }
 
-            return Chunks[chunkX,chunkY].Tiles[xPos % chunkX, yPos % chunkY];
+            return null;
+        }
+
+        /// <summary>
+        /// Gets Chunk from the coordinate of a Tile
+        /// </summary>
+        /// <param name="xPos">X Coordinate of a Tile relative to the World</param>
+        /// <param name="yPos">Y Coordinate of a Tile relative to the World</param>
+        /// <returns></returns>
+        public Chunk GetChunk(int xPos, int yPos)
+        {
+            int worldSizeInTiles = this.MapSize * Chunk.TILES_PER_DIMENSION;
+
+            if (xPos < worldSizeInTiles && xPos > 0 && yPos < worldSizeInTiles && yPos > 0)
+            {
+                int chunkX = (int)Math.Ceiling((double)xPos / Chunk.TILES_PER_DIMENSION);
+                int chunkY = (int)Math.Ceiling((double)yPos / Chunk.TILES_PER_DIMENSION);
+
+                return Chunks[chunkX, chunkY];
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -89,7 +127,7 @@ namespace MapDescriptorTest.World
                 }
             }
 
-            string path = Path.Combine(SaveDirectory, "world.json");
+            string path = Path.Combine(Chunk.GetChunkDirectory(this), "world.json");
             FileUtilities.SaveFileJson(this, path);
         }
 
@@ -112,11 +150,12 @@ namespace MapDescriptorTest.World
             {
                 for (int x = 0; x < world.MapSize; x++)
                 {
-                    world.Chunks[x, y] = new Chunk(x, y);
+                    world.Chunks[x, y] = new Chunk(x, y, world);
                 }
             }
 
             return world;
         }
+
     }
 }

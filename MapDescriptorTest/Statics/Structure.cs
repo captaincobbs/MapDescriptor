@@ -1,4 +1,5 @@
 ﻿using MapDescriptorTest.World;
+using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,16 @@ namespace MapDescriptorTest.Statics
     {
         [JsonProperty("tiletype")]
         public TileObjectType TileType { get; } = TileObjectType.Structure;
+
+        /// <inheritdoc/>
+        public bool IsEntity { get; } = false;
+
         public Structure()
+        {
+
+        }
+
+        public void Draw(SpriteBatch spriteBatch, Tile tile)
         {
 
         }

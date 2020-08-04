@@ -8,14 +8,20 @@ namespace MapDescriptorTest.World
     /// </summary>
     public class Tile
     {
-        [JsonProperty("tileObjects")]
+        [JsonProperty("a")]
         public List<ITileObject> tileObjects { get; set; }
 
+        /// <summary>
+        /// X Position of the Tile relative to the world
+        /// </summary>
         [JsonIgnore]
-        public int XPosition { get; }
+        public int XPosition { get; set; }
 
+        /// <summary>
+        /// Y Position of the Tile relative to the world
+        /// </summary>
         [JsonIgnore]
-        public int YPosition { get; }
+        public int YPosition { get; set; }
 
         public Tile(int x, int y)
         {

@@ -17,6 +17,7 @@ namespace MapDescriptorTest.Statics
         /// Count of possible types of terrain based off of the TerrainTypes enum
         /// </summary>
         public static int TerrainTypeLength { get; private set; } = Enum.GetNames(typeof(TerrainType)).Length;
+        
         /// <summary>
         /// Image array to be used for representing tiles
         /// </summary>
@@ -25,11 +26,15 @@ namespace MapDescriptorTest.Statics
         /// <summary>
         /// Type of terrain that the tile will get its properties from
         /// </summary>
-        [JsonProperty("terraintype")]
+        [JsonProperty("a")]
         public TerrainType TerrainType { get; set; }
 
-        [JsonProperty("tiletype")]
+        [JsonProperty("b")]
         public TileObjectType TileType { get; } = TileObjectType.Terrain;
+
+        /// <inheritdoc/>
+        [JsonProperty("c")]
+        public bool IsEntity { get; } = false;
 
         /// <summary>
         /// Sets passed in variables to the stored properties within the individual terrain
